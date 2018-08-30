@@ -79,9 +79,26 @@
 
                             @BodyCleaner(article, amp = amp)
 
+                            @if(article.tags.isFootball){
+                                <h3>Listen: Class, schoolings and some harsh lessons - Football Weekly</h3>
+                                <audio
+                                controls
+                                class="in-article-audio"
+                                src="https://flex.acast.com/audio.guim.co.uk/2018/08/20-54476-gnl.fw.20180820.sj.fw2008.mp3"
+                                preload="metadata"
+                                data-media-id="gu-audio-5b7467c1e4b016cd4306acc7"
+                                data-title="Class, schoolings and some harsh lessons – Football Weekly"
+                                data-component="in-article audio"
+                                >
+                                    <p> Sorry your browser does not support audio </p>
+                                </audio>
+                            }
+
                             <div class="after-article js-after-article"></div>
 
                             @fragments.submeta(article, amp)
+
+
                         </div>
                     </div>
 
