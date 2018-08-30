@@ -19,19 +19,20 @@ const monitorPlay = (inArticlePlayer, id) => {
 
 const monitorPercentPlayed = (inArticlePlayer, marker, id) => {
 
+    let eventName = marker === 99 ? 'end' : marker.toLocaleString();
+
     inArticlePlayer.addEventListener(
         'timeupdate',
         function listener(e){
             let percentPlayed = Math.round(
                 (e.target.currentTime / e.target.duration) * 100
             );
-            let eventName = marker === 99 ? 'end' : marker.toLocaleString();
             if(percentPlayed > marker) {
                 sendToOphan(id, eventName);
                 e.target.removeEventListener(e.type, listener)
             }
         }
-    );
+    )
 };
 
 export {init};

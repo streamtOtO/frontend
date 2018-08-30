@@ -3,6 +3,30 @@
     background-color: red;
 }
 
-h3 {
-    color: red;
+.inline-audio_container {
+    display: flex;
+    flex-direction: row;
+
+    .inline-audio_icon {
+        width: 100px;
+        flex: auto;
+    }
+
+    .inline-audio_content {
+        flex: auto;
+        .inline-audio_content_header {
+            span.kicker {
+                color: $sport-main;
+            }
+        }
+        .inline-audio_content_header,
+        .inline-audio_content_player {
+            border: 2px solid grey;
+            border-left: none;
+            border-right: none;
+        }
+    }
+
+
+
 }

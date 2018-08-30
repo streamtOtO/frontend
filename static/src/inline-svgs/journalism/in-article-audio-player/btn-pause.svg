@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>pause btn</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="02-EmbedPlayer-Test-Desktop" transform="translate(-505.000000, -465.000000)">
+            <g id="pause-btn" transform="translate(505.000000, 465.000000)">
+                <circle id="Oval-2" fill="#FFE500" cx="15" cy="15" r="15"></circle>
+                <g id="Group-2" transform="translate(9.428571, 7.285714)" fill="#121212">
+                    <rect id="Rectangle-3" x="0" y="0" width="3.42857143" height="15.4285714"></rect>
+                    <rect id="Rectangle-3" x="7.28571429" y="0" width="3.42857143" height="15.4285714"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
