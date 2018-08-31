@@ -71,7 +71,7 @@ const init = () => {
         ['article-mediator-emit-event', modules.emitReadyEvent],
         ['article-handle-quiz-completion', handleQuizCompletion],
         ['article-campaign', initCampaign],
-        ['article-inline-audio', initInArticleAudio], // added for a test of play rates on inline audio players
+        ['article-inline-audio', initInArticleAudio], // Temporary js added for a test of in-article audio players on Football pages
     ]);
 };
 

@@ -79,44 +79,13 @@
 
                             @BodyCleaner(article, amp = amp)
 
-                            @if(article.tags.isFootball){
-                                <div class="inline-audio_container">
-                                    <div class="inline-audio_icon">
-                                        @fragments.inlineSvg("football-weekly-300", "journalism/in-article-audio-player")
-                                    </div>
-                                    <div class="inline-audio_content">
-                                        <div class="inline-audio_content_header">
-                                            <h3>
-                                                <span class="kicker">Listen / </span>
-                                                Class, schoolings and some harsh lessons - Football Weekly
-                                            </h3>
-                                        </div>
-                                        <div class="inline-audio_content_player">
-                                            <audio
-                                            class="in-article-audio"
-                                            src="https://flex.acast.com/audio.guim.co.uk/2018/08/20-54476-gnl.fw.20180820.sj.fw2008.mp3"
-                                            preload="metadata"
-                                            data-media-id="gu-audio-5b7467c1e4b016cd4306acc7"
-                                            data-title="Class, schoolings and some harsh lessons – Football Weekly"
-                                            data-component="in-article audio"
-                                            >
-                                                <p> Sorry your browser does not support audio </p>
-                                            </audio>
-                                            <p>
-                                                <span id="inline-audio_button"></span>
-                                                <span id="inline-audio_time-played">0:00:00</span>
-                                                <span id="inline-audio_duration">1:34:00</span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                            @if(article.tags.isFootball && !article.fields.sensitive){
+                                @fragments.inArticleAudio()
                             }
 
                             <div class="after-article js-after-article"></div>
 
                             @fragments.submeta(article, amp)
-
-
                         </div>
                     </div>
 
