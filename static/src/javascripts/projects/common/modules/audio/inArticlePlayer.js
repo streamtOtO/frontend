@@ -66,20 +66,11 @@ const activateScrubber = (el, player) => {
     });
 };
 
-const setDuration = (el, player) => {
-    const duration = player.duration;
+const setDuration = (el, duration) => {
     el.textContent = formatTime(Math.round(duration));
-
-    player.addEventListener('loadedstate', function metaDataReady(e) {
-        if (player.readyState >= 1) {
-            el.textContent = formatTime(Math.round(duration));
-            player.removeEventListener(e.type, metaDataReady);
-        }
-    });
 };
 
 // INITIALISER
-
 const init = () => {
     const player = document.querySelector('audio.inline-audio-player-element');
 
@@ -119,10 +110,20 @@ const init = () => {
         durationSpan
     ) {
         playerObserved(container, mediaId);
-        setDuration(durationSpan, player);
         activateAudioControls(buttonDiv, player, mediaId);
         updateTime(timePlayedSpan, player, progressBar);
-        activateScrubber(scrubberBar, player);
+
+        // should run on Chrome, FF
+        if (!Number.isNaN(player.duration)) {
+            setDuration(durationSpan, player.duration);
+            activateScrubber(scrubberBar, player);
+        }
+
+        // fix to get duration to work on Safari
+        player.addEventListener('loadedmetadata', () => {
+            setDuration(durationSpan, player.duration);
+            activateScrubber(scrubberBar, player);
+        });
 
         monitorPercentPlayed(player, 25, mediaId);
         monitorPercentPlayed(player, 50, mediaId);
