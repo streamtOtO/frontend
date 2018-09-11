@@ -4,7 +4,7 @@ import com.gu.Box
 import contentapi.ContentApiClient
 import common._
 import services.OphanApi
-import model.RelatedContentItem
+import model.{Content, RelatedContentItem}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -113,5 +113,28 @@ class DayMostPopularAgent(contentApiClient: ContentApiClient, ophanApi: OphanApi
       }
       ophanPopularAgent.alter(_ + (country.code -> validItems))
     }
+  }
+}
+
+class MostCommentedAgent(contentApiClient: ContentApiClient) extends Logging {
+  private[this] val agent = Box[Map[String, Content]](Map.empty)
+
+  def get: Map[String, Content] = agent.get()
+
+  def refresh()(implicit ec: ExecutionContext): Future[Map[String, Seq[Content]]] = {
+    log.info("Refreshing most commented.")
+    ???
+  }
+}
+
+// Tracks articles with most social (facebook) referrals
+class MostSocialReferralsAgent(contentApiClient: ContentApiClient) extends Logging {
+  private[this] val agent = Box[Map[String, Content]](Map.empty)
+
+  def get: Map[String, Content] = agent.get()
+
+  def refresh()(implicit ec: ExecutionContext): Future[Map[String, Seq[Content]]] = {
+    log.info("Refreshing most social referrals.")
+    ???
   }
 }

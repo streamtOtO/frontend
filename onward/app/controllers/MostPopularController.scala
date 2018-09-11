@@ -6,7 +6,7 @@ import java.time.temporal.ChronoUnit
 import common._
 import conf.switches.Switches
 import contentapi.ContentApiClient
-import feed.{DayMostPopularAgent, GeoMostPopularAgent, MostPopularAgent}
+import feed._
 import model.Cached.RevalidatableResult
 import model._
 import models.OnwardCollection._
@@ -22,6 +22,8 @@ class MostPopularController(contentApiClient: ContentApiClient,
   geoMostPopularAgent: GeoMostPopularAgent,
   dayMostPopularAgent: DayMostPopularAgent,
   mostPopularAgent: MostPopularAgent,
+  mostCommentedAgent: MostCommentedAgent,
+  mostSocialReferralsAgent: MostSocialReferralsAgent,
   val controllerComponents: ControllerComponents)
   (implicit context: ApplicationContext) extends BaseController with Logging with ImplicitControllerExecutionContext {
     val page = SimplePage(MetaData.make(
@@ -42,6 +44,9 @@ class MostPopularController(contentApiClient: ContentApiClient,
     }
     val sectionPopular: Future[List[MostPopular]] = if (path.nonEmpty) lookup(edition, path).map(_.toList) else Future(Nil)
 
+    val mostCommented = mostCommentedAgent.get(edition.id)
+    val mostSocialReferrals = mostSocialReferralsAgent.get(edition.id)
+
     sectionPopular.map { sectionPopular =>
       val sectionFirst = sectionPopular ++ globalPopular
       val globalFirst = globalPopular.toList ++ sectionPopular
@@ -53,7 +58,7 @@ class MostPopularController(contentApiClient: ContentApiClient,
         case popular if !request.isJson => Cached(900) { RevalidatableResult.Ok(views.html.mostPopular(page, popular)) }
         case popular => Cached(900) {
           JsonComponent(
-            "html" ->  getPopular(popular),
+            "html" ->  getPopular(popular, mostCommented, mostSocialReferrals),
             "rightHtml" -> views.html.fragments.rightMostPopular(globalPopular)
           )
         }
@@ -67,12 +72,13 @@ class MostPopularController(contentApiClient: ContentApiClient,
     "IN" -> "India"
   )
 
-  def getPopular(items: Seq[MostPopular])(implicit request: RequestHeader): HtmlFormat.Appendable = {
-    val countryMostCommented: Content = null
-    val countryOnSocial: Content = null
-
+  def getPopular(
+    items: Seq[MostPopular],
+    mostCommented: Content,
+    mostSocialReferrals: Content
+  )(implicit request: RequestHeader): HtmlFormat.Appendable = {
     if (Switches.UseMegaMostViewed.isSwitchedOn) {
-      views.html.fragments.collections.popularMega(items, countryMostCommented, countryOnSocial)
+      views.html.fragments.collections.popularMega(items, mostCommented, mostSocialReferrals)
     } else {
       views.html.fragments.collections.popular(items)
     }
@@ -83,14 +89,15 @@ class MostPopularController(contentApiClient: ContentApiClient,
     val countryCode = headers.getOrElse("X-GU-GeoLocation","country:row").replace("country:","")
 
     val countryPopular = MostPopular("across the guardian", "", geoMostPopularAgent.mostPopular(countryCode).map(_.faciaContent))
-
+    val mostCommented = mostCommentedAgent.get(countryCode)
+    val mostSocialReferrals = mostSocialReferralsAgent.get(countryCode)
 
     if (request.isGuui) {
       jsonResponse(countryPopular, countryCode)
     } else {
       Cached(900) {
         JsonComponent(
-          "html" -> getPopular(Seq(countryPopular)),
+          "html" -> getPopular(Seq(countryPopular), mostCommented, mostSocialReferrals),
           "rightHtml" -> views.html.fragments.rightMostPopularGeoGarnett(countryPopular, countryNames.get(countryCode), countryCode),
           "country" -> countryCode
         )

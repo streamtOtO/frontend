@@ -23,6 +23,8 @@ trait OnwardControllers {
   def dayMostPopularAgent: DayMostPopularAgent
   def mostPopularAgent: MostPopularAgent
   def mostReadAgent: MostReadAgent
+  def mostCommentedAgent: MostCommentedAgent
+  def mostSocialReferralsAgent: MostSocialReferralsAgent
   def mostPopularSocialAutoRefresh: MostPopularSocialAutoRefresh
   def mostViewedVideoAgent: MostViewedVideoAgent
   def mostViewedGalleryAgent: MostViewedGalleryAgent
