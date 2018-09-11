@@ -71,7 +71,7 @@ class MostPopularController(contentApiClient: ContentApiClient,
     val countryMostCommented: Content = null
     val countryOnSocial: Content = null
 
-    if (true) {
+    if (Switches.UseMegaMostViewed.isSwitchedOn) {
       views.html.fragments.collections.popularMega(items, countryMostCommented, countryOnSocial)
     } else {
       views.html.fragments.collections.popular(items)
