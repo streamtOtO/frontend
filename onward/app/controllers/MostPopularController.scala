@@ -4,6 +4,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import common._
+import conf.switches.Switches
 import contentapi.ContentApiClient
 import feed.{DayMostPopularAgent, GeoMostPopularAgent, MostPopularAgent}
 import model.Cached.RevalidatableResult
@@ -12,6 +13,7 @@ import models.OnwardCollection._
 import models.{MostPopularGeoResponse, OnwardCollection, OnwardCollectionResponse}
 import play.api.libs.json._
 import play.api.mvc._
+import play.twirl.api.HtmlFormat
 import views.support.FaciaToMicroFormat2Helpers._
 
 import scala.concurrent.Future
@@ -51,7 +53,7 @@ class MostPopularController(contentApiClient: ContentApiClient,
         case popular if !request.isJson => Cached(900) { RevalidatableResult.Ok(views.html.mostPopular(page, popular)) }
         case popular => Cached(900) {
           JsonComponent(
-            "html" ->  views.html.fragments.collections.popular(popular),
+            "html" ->  getPopular(popular),
             "rightHtml" -> views.html.fragments.rightMostPopular(globalPopular)
           )
         }
@@ -65,18 +67,30 @@ class MostPopularController(contentApiClient: ContentApiClient,
     "IN" -> "India"
   )
 
+  def getPopular(items: Seq[MostPopular])(implicit request: RequestHeader): HtmlFormat.Appendable = {
+    val countryMostCommented: Content = null
+    val countryOnSocial: Content = null
+
+    if (true) {
+      views.html.fragments.collections.popularMega(items, countryMostCommented, countryOnSocial)
+    } else {
+      views.html.fragments.collections.popular(items)
+    }
+  }
+
   def renderPopularGeo(): Action[AnyContent] = Action { implicit request =>
     val headers = request.headers.toSimpleMap
     val countryCode = headers.getOrElse("X-GU-GeoLocation","country:row").replace("country:","")
 
     val countryPopular = MostPopular("across the guardian", "", geoMostPopularAgent.mostPopular(countryCode).map(_.faciaContent))
 
+
     if (request.isGuui) {
       jsonResponse(countryPopular, countryCode)
     } else {
       Cached(900) {
         JsonComponent(
-          "html" -> views.html.fragments.collections.popular(Seq(countryPopular)),
+          "html" -> getPopular(Seq(countryPopular)),
           "rightHtml" -> views.html.fragments.rightMostPopularGeoGarnett(countryPopular, countryNames.get(countryCode), countryCode),
           "country" -> countryCode
         )
