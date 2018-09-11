@@ -79,7 +79,7 @@
 
                             @BodyCleaner(article, amp = amp)
 
-                            @if(article.tags.isFootball && !article.fields.sensitive){
+                            @if(conf.switches.Switches.FootballWeeklyPlayerTest.isSwitchedOn && article.tags.isFootball && !article.fields.sensitive){
                                 @fragments.inArticleAudio()
                             }
 
