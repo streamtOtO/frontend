@@ -1,10 +1,12 @@
 package feed
 
 import com.gu.Box
+import com.gu.contentapi.client.model.SearchQuery
 import contentapi.ContentApiClient
 import common._
-import services.OphanApi
+import services.{OphanApi, S3}
 import model.{Content, RelatedContentItem}
+import play.api.libs.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -116,25 +118,83 @@ class DayMostPopularAgent(contentApiClient: ContentApiClient, ophanApi: OphanApi
   }
 }
 
-class MostCommentedAgent(contentApiClient: ContentApiClient) extends Logging {
-  private[this] val agent = Box[Map[String, Content]](Map.empty)
+case class MegaSlotMeta(
+  headline: String,
+  uk: String,
+  us: String,
+  au: String,
+  row: String
+)
 
-  def get: Map[String, Content] = agent.get()
+object MegaSlotMeta {
+  implicit val reads = Json.reads[MegaSlotMeta]
+}
 
-  def refresh()(implicit ec: ExecutionContext): Future[Map[String, Seq[Content]]] = {
-    log.info("Refreshing most commented.")
-    ???
+case class MegaSlot(
+  headline: String,
+  uk: Content,
+  us: Content,
+  au: Content,
+  row: Content
+)
+
+trait MegaSlotAgent extends Logging {
+  val contentApiClient: ContentApiClient
+  val s3Key: String
+
+  private[this] val agent = Box[Option[MegaSlot]](None)
+
+  def getHeadline: String = agent.get.map(_.headline).getOrElse("")
+
+  def get(edition: String): Option[Content] = {
+    log.info(s"Most commented: looking for $edition, from ${agent.get}")
+    agent.get.flatMap { megaSlot =>
+      edition match {
+        case "uk" => Some(megaSlot.uk)
+        case "us" => Some(megaSlot.us)
+        case "au" => Some(megaSlot.au)
+        case "row" => Some(megaSlot.row)
+        case _ => None
+      }
+    }
+  }
+
+  def refresh()(implicit ec: ExecutionContext): Future[Option[MegaSlot]] = {
+    log.info("Refreshing mega slot.")
+    val blob = S3.get(s3Key)
+
+    def populateFromCAPI(meta: MegaSlotMeta): Future[MegaSlot] = {
+      val idsParam = s"${meta.uk},${meta.au},${meta.us},${meta.row}"
+      val query = contentApiClient.search.ids(idsParam)
+
+      for {
+        response <- contentApiClient.getResponse(query)
+      } yield {
+        val models = response.results.map(c => c.id -> Content.make(c)).toMap
+        MegaSlot(
+          headline = meta.headline,
+          uk = models(meta.uk),
+          us = models(meta.us),
+          au = models(meta.au),
+          row = models(meta.row)
+        )
+      }
+    }
+
+    val result = for {
+      str <- blob
+      meta <- Json.parse(str).asOpt[MegaSlotMeta]
+    } yield populateFromCAPI(meta).map(Some.apply)
+
+    result.getOrElse(Future.successful(agent.get))
   }
 }
 
-// Tracks articles with most social (facebook) referrals
-class MostSocialReferralsAgent(contentApiClient: ContentApiClient) extends Logging {
-  private[this] val agent = Box[Map[String, Content]](Map.empty)
+// because of the macwire DI framework
+class MegaSlot1Agent(val contentApiClient: ContentApiClient) extends MegaSlotAgent {
+  override val s3Key: String = "foo"
+}
 
-  def get: Map[String, Content] = agent.get()
-
-  def refresh()(implicit ec: ExecutionContext): Future[Map[String, Seq[Content]]] = {
-    log.info("Refreshing most social referrals.")
-    ???
-  }
+class MegaSlot2Agent(val contentApiClient: ContentApiClient) extends MegaSlotAgent {
+  override val s3Key: String = "ar"
 }

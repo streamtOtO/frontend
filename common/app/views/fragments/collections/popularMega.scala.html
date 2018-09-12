@@ -1,4 +1,4 @@
-@(popular: Seq[model.MostPopular], commented: model.Content, onSocial: model.Content, containerDefinition: Option[layout.FaciaContainer] = None, isFront: Boolean = false)(implicit request: RequestHeader)
+@(popular: Seq[model.MostPopular], slot1Headline: String, slot1Content: model.Content, slot2Headline: String, slot2Content: model.Content, containerDefinition: Option[layout.FaciaContainer] = None, isFront: Boolean = false)(implicit request: RequestHeader)
 
 @import common.Localisation
 @import layout.FaciaCardHeader
@@ -64,8 +64,8 @@
         }
 
         <div class="mega-meta">
-            <div>Most commented</div>
-            <div>Most shared</div>
+            <div>@{slot1Headline + " " + slot1Content.metadata.id}</div>
+            <div>@{slot2Headline + " " + slot2Content.metadata.id}</div>
         </div>
 
     </div>

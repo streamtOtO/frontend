@@ -11,6 +11,7 @@ import model.Cached.RevalidatableResult
 import model._
 import models.OnwardCollection._
 import models.{MostPopularGeoResponse, OnwardCollection, OnwardCollectionResponse}
+import org.joda.time.DateTime
 import play.api.libs.json._
 import play.api.mvc._
 import play.twirl.api.HtmlFormat
@@ -22,8 +23,8 @@ class MostPopularController(contentApiClient: ContentApiClient,
   geoMostPopularAgent: GeoMostPopularAgent,
   dayMostPopularAgent: DayMostPopularAgent,
   mostPopularAgent: MostPopularAgent,
-  mostCommentedAgent: MostCommentedAgent,
-  mostSocialReferralsAgent: MostSocialReferralsAgent,
+  megaSlot1: MegaSlot1Agent,
+  megaSlot2: MegaSlot2Agent,
   val controllerComponents: ControllerComponents)
   (implicit context: ApplicationContext) extends BaseController with Logging with ImplicitControllerExecutionContext {
     val page = SimplePage(MetaData.make(
@@ -44,8 +45,8 @@ class MostPopularController(contentApiClient: ContentApiClient,
     }
     val sectionPopular: Future[List[MostPopular]] = if (path.nonEmpty) lookup(edition, path).map(_.toList) else Future(Nil)
 
-    val mostCommented = mostCommentedAgent.get(edition.id)
-    val mostSocialReferrals = mostSocialReferralsAgent.get(edition.id)
+    val slot1 = megaSlot1.get(edition.id)
+    val slot2 = megaSlot2.get(edition.id)
 
     sectionPopular.map { sectionPopular =>
       val sectionFirst = sectionPopular ++ globalPopular
@@ -58,7 +59,7 @@ class MostPopularController(contentApiClient: ContentApiClient,
         case popular if !request.isJson => Cached(900) { RevalidatableResult.Ok(views.html.mostPopular(page, popular)) }
         case popular => Cached(900) {
           JsonComponent(
-            "html" ->  getPopular(popular, mostCommented, mostSocialReferrals),
+            "html" ->  getPopular(popular, megaSlot1.getHeadline, slot1, megaSlot2.getHeadline, slot2),
             "rightHtml" -> views.html.fragments.rightMostPopular(globalPopular)
           )
         }
@@ -74,14 +75,27 @@ class MostPopularController(contentApiClient: ContentApiClient,
 
   def getPopular(
     items: Seq[MostPopular],
-    mostCommented: Content,
-    mostSocialReferrals: Content
+    slot1Headline: String,
+    slot1Content: Option[Content],
+    slot2Headline: String,
+    slot2Content: Option[Content]
   )(implicit request: RequestHeader): HtmlFormat.Appendable = {
-    if (Switches.UseMegaMostViewed.isSwitchedOn) {
-      views.html.fragments.collections.popularMega(items, mostCommented, mostSocialReferrals)
-    } else {
-      views.html.fragments.collections.popular(items)
+
+    def isTooOld(content: Content): Boolean = {
+      val threeDaysAgo = DateTime.now.minusDays(3)
+      content.fields.firstPublicationDate.exists(_.isBefore(threeDaysAgo))
     }
+
+    val mega = for {
+      s1Content <- slot1Content
+      s2Content <- slot2Content
+      if Switches.UseMegaMostViewed.isSwitchedOn
+      if !isTooOld(s1Content) && !isTooOld(s2Content)
+    } yield {
+      views.html.fragments.collections.popularMega(items, slot1Headline, s1Content, slot2Headline, s2Content)
+    }
+
+    mega.getOrElse(views.html.fragments.collections.popular(items))
   }
 
   def renderPopularGeo(): Action[AnyContent] = Action { implicit request =>
@@ -89,15 +103,18 @@ class MostPopularController(contentApiClient: ContentApiClient,
     val countryCode = headers.getOrElse("X-GU-GeoLocation","country:row").replace("country:","")
 
     val countryPopular = MostPopular("across the guardian", "", geoMostPopularAgent.mostPopular(countryCode).map(_.faciaContent))
-    val mostCommented = mostCommentedAgent.get(countryCode)
-    val mostSocialReferrals = mostSocialReferralsAgent.get(countryCode)
+
+    val edition = Edition.apply(request).id
+
+    val slot1 = megaSlot1.get(edition)
+    val slot2 = megaSlot2.get(edition)
 
     if (request.isGuui) {
       jsonResponse(countryPopular, countryCode)
     } else {
       Cached(900) {
         JsonComponent(
-          "html" -> getPopular(Seq(countryPopular), mostCommented, mostSocialReferrals),
+          "html" -> getPopular(Seq(countryPopular), megaSlot1.getHeadline, slot1, megaSlot2.getHeadline, slot2),
           "rightHtml" -> views.html.fragments.rightMostPopularGeoGarnett(countryPopular, countryNames.get(countryCode), countryCode),
           "country" -> countryCode
         )
