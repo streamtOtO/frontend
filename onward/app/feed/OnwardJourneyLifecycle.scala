@@ -14,6 +14,8 @@ class OnwardJourneyLifecycle(
   geoMostPopularAgent: GeoMostPopularAgent,
   dayMostPopularAgent: DayMostPopularAgent,
   mostPopularAgent: MostPopularAgent,
+  megaSlot1Agent: MegaSlot1Agent,
+  megaSlot2Agent: MegaSlot2Agent,
   mostViewedAudioAgent: MostViewedAudioAgent,
   mostViewedGalleryAgent: MostViewedGalleryAgent,
   mostViewedVideoAgent: MostViewedVideoAgent) extends LifecycleComponent {
@@ -58,6 +60,9 @@ class OnwardJourneyLifecycle(
       mostViewedGalleryAgent.refresh()
       mostViewedVideoAgent.refresh()
       mostReadAgent.refresh()
+      megaSlot1Agent.refresh()
+      megaSlot2Agent.refresh()
+
     }
   }
 }

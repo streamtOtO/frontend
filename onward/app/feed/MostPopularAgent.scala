@@ -4,7 +4,7 @@ import com.gu.Box
 import com.gu.contentapi.client.model.SearchQuery
 import contentapi.ContentApiClient
 import common._
-import services.{OphanApi, S3}
+import services.{OphanApi, S3, S3Megaslot}
 import model.{Content, RelatedContentItem}
 import play.api.libs.json._
 
@@ -147,7 +147,7 @@ trait MegaSlotAgent extends Logging {
   def getHeadline: String = agent.get.map(_.headline).getOrElse("")
 
   def get(edition: String): Option[Content] = {
-    log.info(s"Most commented: looking for $edition, from ${agent.get}")
+    log.info(s"Megaslot: looking for $edition, from ${agent.get}")
     agent.get.flatMap { megaSlot =>
       edition match {
         case "uk" => Some(megaSlot.uk)
@@ -160,8 +160,9 @@ trait MegaSlotAgent extends Logging {
   }
 
   def refresh()(implicit ec: ExecutionContext): Future[Option[MegaSlot]] = {
-    log.info("Refreshing mega slot.")
-    val blob = S3.get(s3Key)
+    log.info("Megaslot - refreshing.")
+    val blob = S3Megaslot.get(s3Key)
+    log.info(s"Megaslot - got $blob from s3")
 
     def populateFromCAPI(meta: MegaSlotMeta): Future[MegaSlot] = {
       val idsParam = s"${meta.uk},${meta.au},${meta.us},${meta.row}"
@@ -192,9 +193,9 @@ trait MegaSlotAgent extends Logging {
 
 // because of the macwire DI framework
 class MegaSlot1Agent(val contentApiClient: ContentApiClient) extends MegaSlotAgent {
-  override val s3Key: String = "foo"
+  override val s3Key: String = "mega1.json"
 }
 
 class MegaSlot2Agent(val contentApiClient: ContentApiClient) extends MegaSlotAgent {
-  override val s3Key: String = "ar"
+  override val s3Key: String = "mega2.json"
 }

@@ -176,3 +176,7 @@ object S3Infosec extends S3 {
 object S3ArchiveOriginals extends S3 {
   override lazy val bucket = if (Configuration.environment.isNonProd) "aws-frontend-archive-code-originals" else "aws-frontend-archive-originals"
 }
+
+object S3Megaslot extends S3 {
+  override lazy val bucket = "com-gu-most-viewed-megaslot-test"
+}
