@@ -123,6 +123,10 @@ GET         /troubleshoot/cricket                                               
 GET         /troubleshoot/pages                                                                     controllers.admin.TroubleshooterController.index()
 GET         /troubleshoot/test                                                                      controllers.admin.TroubleshooterController.test(id, testPath)
 
+# Mega most viewed experiment
+GET         /mega-most-viewed                                                                       controllers.admin.MegaMostViewedController.get()
+POST        /mega-most-viewed                                                                       controllers.admin.MegaMostViewedController.set()
+
 # Football admin
 GET         /admin/football                                                                         controllers.admin.SiteController.index
 GET         /admin/football/browse                                                                  controllers.admin.PaBrowserController.browse

@@ -5,7 +5,7 @@ import com.gu.contentapi.client.model.SearchQuery
 import contentapi.ContentApiClient
 import common._
 import services.{OphanApi, S3, S3Megaslot}
-import model.{Content, RelatedContentItem}
+import model.{Content, MegaSlotMeta, RelatedContentItem}
 import play.api.libs.json._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -116,18 +116,6 @@ class DayMostPopularAgent(contentApiClient: ContentApiClient, ophanApi: OphanApi
       ophanPopularAgent.alter(_ + (country.code -> validItems))
     }
   }
-}
-
-case class MegaSlotMeta(
-  headline: String,
-  uk: String,
-  us: String,
-  au: String,
-  row: String
-)
-
-object MegaSlotMeta {
-  implicit val reads = Json.reads[MegaSlotMeta]
 }
 
 case class MegaSlot(
