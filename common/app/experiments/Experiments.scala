@@ -11,7 +11,8 @@ object ActiveExperiments extends ExperimentsDefinition {
     CommercialClientLogging,
     OrielParticipation,
     OldTLSSupportDeprecation,
-    ThrasherAdjacentMPU
+    ThrasherAdjacentMPU,
+    DotcomponentsRendering
   )
   implicit val canCheckExperiment = new CanCheckExperiment(this)
 }
@@ -56,5 +57,14 @@ object ThrasherAdjacentMPU extends Experiment(
   sellByDate = new LocalDate(2018, 9, 18),
   participationGroup = Perc10A
 )
+
+object DotcomponentsRendering extends Experiment(
+  name = "dotcomponents-rendering",
+  description = "This will force rendering of articles to use dotcomponents, if that page is supported",
+  owners = Seq(Owner.withGithub("MatthewJWalls")),
+  sellByDate = new LocalDate(2018, 12, 31),
+  participationGroup = Perc0A
+)
+
 
 
