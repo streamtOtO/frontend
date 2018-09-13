@@ -146,14 +146,14 @@ trait MegaSlotAgent extends Logging {
 
   def getHeadline: String = agent.get.map(_.headline).getOrElse("")
 
-  def get(edition: String): Option[Content] = {
+  def get(edition: Edition): Option[Content] = {
     log.info(s"Megaslot: looking for $edition, from ${agent.get}")
     agent.get.flatMap { megaSlot =>
       edition match {
-        case "uk" => Some(megaSlot.uk)
-        case "us" => Some(megaSlot.us)
-        case "au" => Some(megaSlot.au)
-        case "row" => Some(megaSlot.row)
+        case editions.Uk => Some(megaSlot.uk)
+        case editions.Us => Some(megaSlot.us)
+        case editions.Au => Some(megaSlot.au)
+        case editions.International => Some(megaSlot.row)
         case _ => None
       }
     }
@@ -172,6 +172,7 @@ trait MegaSlotAgent extends Logging {
         response <- contentApiClient.getResponse(query)
       } yield {
         val models = response.results.map(c => c.id -> Content.make(c)).toMap
+        log.info(s"Megaslot - capi response has IDs: ${response.results.map(_.id).mkString(",")}")
         MegaSlot(
           headline = meta.headline,
           uk = models(meta.uk),
@@ -184,8 +185,15 @@ trait MegaSlotAgent extends Logging {
 
     val result = for {
       str <- blob
-      meta <- Json.parse(str).asOpt[MegaSlotMeta]
-    } yield populateFromCAPI(meta).map(Some.apply)
+      meta <- {
+        val slot = Json.parse(str).asOpt[MegaSlotMeta]
+        Json.parse(str).validate[MegaSlotMeta] match {
+          case error: JsError => log.error(s"Megaslot - invalid JSON with errors: ${JsError.toJson(error).toString()}")
+          case _ =>
+        }
+        slot
+      }
+    } yield populateFromCAPI(meta).map(Some.apply).flatMap(agent.alter)
 
     result.getOrElse(Future.successful(agent.get))
   }

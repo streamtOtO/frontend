@@ -45,8 +45,8 @@ class MostPopularController(contentApiClient: ContentApiClient,
     }
     val sectionPopular: Future[List[MostPopular]] = if (path.nonEmpty) lookup(edition, path).map(_.toList) else Future(Nil)
 
-    val slot1 = megaSlot1.get(edition.id)
-    val slot2 = megaSlot2.get(edition.id)
+    val slot1 = megaSlot1.get(edition)
+    val slot2 = megaSlot2.get(edition)
 
     sectionPopular.map { sectionPopular =>
       val sectionFirst = sectionPopular ++ globalPopular
@@ -104,8 +104,7 @@ class MostPopularController(contentApiClient: ContentApiClient,
 
     val countryPopular = MostPopular("across the guardian", "", geoMostPopularAgent.mostPopular(countryCode).map(_.faciaContent))
 
-    val edition = Edition.apply(request).id
-
+    val edition = Edition.apply(request)
     val slot1 = megaSlot1.get(edition)
     val slot2 = megaSlot2.get(edition)
 
